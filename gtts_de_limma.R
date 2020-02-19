@@ -4,8 +4,13 @@
 # 使用limma对芯片数据进行差异表达分析
 library(argparser)
 library(limma)
+library(logger)
 
 
+# 警告类型预定义
+kWarns <- list(
+  WARN_GTTS_DE_LIMMA_001 = '没有差异基因'
+)
 # 错误类型预定义
 kErrs <- list(
   ERR_GTTS_DE_LIMMA_001 = '未指定表达谱文件路径',
@@ -57,15 +62,21 @@ kKeepCols <- c(
 kDefaultOutdir <- '.'
 
 
-GetErrMsg <- function(code) {
-  # 获取格式化的错误信息
-  # 一般一个格式化的错误信息由两个部分组成
-  # 错误代号：错误信息
+GetMsg <- function(code) {
+  # 获取格式化的警告或错误信息
+  # 一般一个格式化的警告错误信息由两个部分组成
+  # 警告或错误代号：警告或错误信息
   # Args:
-  #   code: 错误代号
+  #   code: 警告或错误代号
   # Returns:
-  #   格式化的错误信息
-  return(sprintf('%s：%s', code, kErrs[[code]]))
+  #   格式化的警告或错误信息
+  type <- substr(code, 1, 3)
+  if (type == 'ERR') {
+    msgs <- kErrs
+  } else {
+    msgs <- kWarns
+  }
+  return(sprintf('%s：%s', code, msgs[[code]]))
 }
 
 
@@ -91,7 +102,7 @@ ReadExpFile <- function(file, fmt = 'tsv') {
     exp <- readRDS(file)
   }
   if (is.null(exp)) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_004'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_004'))
   }
   return(exp)
 }
@@ -119,25 +130,9 @@ ReadPhenoFile <- function(file, fmt = 'tsv') {
     pheno <- readRDS(file)
   }
   if (is.null(pheno)) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_008'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_008'))
   }
   return(pheno)
-}
-
-
-GetGrpFromPheno <- function(pheno, col = 1) {
-  # 从表型信息数据框中得到分组因子
-  # Args:
-  #   pheno: 表型信息数据框
-  #   col: 哪一列是分组信息
-  # Returns:
-  #   分组因子
-  grp <- gsub('\\s', kReplaceSpaceWith, pheno[, col])
-  names(grp) <- rownames(pheno)
-  if (class(grp) != 'factor') {
-    grp <- as.factor(grp)
-  }
-  return(grp)
 }
 
 
@@ -233,6 +228,7 @@ GetArgs <- function() {
                          ))
   parser <- add_argument(parser, '--outdir', default = kDefaultOutdir,
                          help = '输出文件夹')
+  parser <- add_argument(parser, '--debug', flag = TRUE, help = '打开调试模式')
   return(parse_args(parser))
 }
 
@@ -241,58 +237,58 @@ CheckArgs <- function(args) {
   # 命令行参数校验
   # 检查是否指定表达谱文件路径
   if (is.na(args$exp_file)) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_001'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_001'))
   }
   
   # 检查表达谱文件是否存在
   if (! file.exists(args$exp_file)) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_002'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_002'))
   }
   
   # 检查表达谱文件格式是否支持
   if (! args$exp_file_fmt %in% kSupportedExpFileFmts) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_003'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_003'))
   }
   
   # 检查是否指定表型信息文件路径
   if (is.na(args$pheno_file)) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_005'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_005'))
   }
   
   # 检查表型文件是否存在
   if (! file.exists(args$pheno_file)) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_006'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_006'))
   }
   
   # 检查表型文件格式是否支持
   if (! args$pheno_file_fmt %in% kSupportedPhenoFileFmts) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_007'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_007'))
   }
   
   # 检查lfc是否大于0
   if (args$lfc < 0) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_009'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_009'))
   }
   
   # 检查p value是否大于等于0小于等于1
   if (args$pvalue < 0 | args$pvalue > 1) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_010'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_010'))
   }
   
   # 检查adjust method是否支持
   if (! args$adjust_method %in% kAdjustMethods) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_011'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_011'))
   }
   
   outdir <- normalizePath(args$outdir)
   # 检查输出文件夹是否存在
   if (! dir.exists(outdir)) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_012'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_012'))
   }
   
   # 检查输出文件夹是否可写入
   if (file.access(outdir, 2) != 0) {
-    stop(GetErrMsg('ERR_GTTS_DE_LIMMA_013'))
+    stop(GetMsg('ERR_GTTS_DE_LIMMA_013'))
   }
   return(args)
 }
@@ -302,14 +298,35 @@ Main <- function() {
   # 脚本入口函数
   args <- GetArgs()
   args <- CheckArgs(args)
+  if (args$debug) {
+    log_threshold(DEBUG)
+  } else {
+    log_threshold(WARN)
+  }
   outdir <- normalizePath(args$outdir)
+  grp.col.num <-  args$grp_col_num - 1  # 第一列是列名
+
+  # 读取表达谱和表型信息
   exp <- ReadExpFile(args$exp_file, args$exp_file_fmt)
   pheno <- ReadPhenoFile(args$pheno_file, args$pheno_file_fmt)
-  grp.col.num <-  args$grp_col_num - 1  # 第一列是列名
-  grp <- GetGrpFromPheno(pheno, grp.col.num)
+
+  # 取交集并获取分组
+  log_debug(sprintf('表达谱文件中共有样本%s个', dim(exp)[2]))
+  log_debug(sprintf('表型信息文件中共有样本%s个', dim(pheno)[1]))
+  samples <- intersect(colnames(exp), rownames(pheno))
+  log_debug(sprintf('既有表达谱信息、又有表型信息的样本共有%s个', length(samples)))
+  exp <- exp[, samples]
+  grp <- as.character(pheno[samples, grp.col.num])
+  grp <- make.names(grp)  # 防止分组里面有非法字符
+  names(grp) <- samples
+  grp <- as.factor(grp)
+
+  # 差异表达分析
   design <- MakeDesign(grp)
   contrasts.matrix <- MakeContrastsMatrix(grp)
   efit <- DoDe(exp, design, contrasts.matrix)
+
+  # 获取差异表达基因并保存到文件
   degs <- lapply(colnames(contrasts.matrix), function(coef) {
     tt <- topTable(
       efit,
@@ -318,13 +335,17 @@ Main <- function() {
       adjust.method = args$adjust_method,
       p.value = args$pvalue,
       lfc = args$lfc
-    )[kKeepCols]
-    write.table(
-      tt,
-      file.path(outdir, sprintf('%s.tsv', coef)),
-      col.names = NA,
-      sep = '\t'
     )
+    if (dim(tt)[1] < 1) {  # 没有差异基因显示警告
+      log_warn(GetMsg('WARN_GTTS_DE_LIMMA_001'))
+    } else {
+      write.table(
+        tt[kKeepCols],
+        file.path(outdir, sprintf('%s.tsv', coef)),
+        col.names = NA,
+        sep = '\t'
+      )
+    }
     return(tt)
   })
 }

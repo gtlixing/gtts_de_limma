@@ -15,22 +15,30 @@ knitr::opts_chunk$set(include = FALSE)
 
 limma是一个常用的差异表达分析工具，主要用于芯片表达谱数据。本程序通过limma对芯片表达谱进行差异表达分析。
 
-    1. 指定表达谱文件路径
-    2. 指定表达谱数据格式，目前支持tsv,csv,rds三个格式，默认
-    3. 指定表型信息文件路径
-    4. 指定表型信息书记局格式，目前支持tsv,csv,rds三个格式
-    5. 指定
 
 ### 开发环境
 
-1. R版本：3.6.2
+1. 系统版本：macOS catalina 10.15.3
+2. R版本：3.6.2
 
 ### 依赖
 
 1. argparser: 0.6
 2. limma: 3.42.2
 
-### 错误说明
+### 输出信息
+
+#### 警告信息
+
+程序运行过程中，由于用户的输入错误导致的警告，已定义的有：
+
+```R
+kWarns <- list(
+  WARN_GTTS_DE_LIMMA_001 = '没有差异基因'
+)
+```
+
+#### 错误说明
 
 程序运行过程中，由于用户的输入错误导致的错误，已定义的有：
 
@@ -56,25 +64,29 @@ kErrs <- list(
 ### 参数
 
 ```
-usage: ./gtts_de_limma.R [--] [--help] [--opts OPTS] [--exp-file EXP-FILE] [--exp-file-fmt EXP-FILE-FMT] [--pheno-file PHENO-FILE] [--pheno-file-fmt PHENO-FILE-FMT] [--grp-col-num GRP-COL-NUM] [--lfc LFC] [--pvalue PVALUE] [--adjust-method ADJUST-METHOD] [--outdir OUTDIR]
+usage: gtts_de_limma.R [--] [--help] [--debug] [--opts OPTS]
+       [--exp-file EXP-FILE] [--exp-file-fmt EXP-FILE-FMT]
+       [--pheno-file PHENO-FILE] [--pheno-file-fmt PHENO-FILE-FMT]
+       [--grp-col-num GRP-COL-NUM] [--lfc LFC] [--pvalue PVALUE]
+       [--adjust-method ADJUST-METHOD] [--outdir OUTDIR]
 
 limma差异表达分析
 
-
 flags:
-  -h, --help                    show this help message and exit
+  -h, --help           show this help message and exit
+  -d, --debug          打开调试模式
 
 optional arguments:
-  -x, --opts OPTS                       RDS file containing argument values
-  -e, --exp-file EXP-FILE                       表达谱文件路径
-  --exp-file-fmt EXP-FILE-FMT                   表达谱文件格式, 支持tsv,csv,rds [default: tsv]
-  -p, --pheno-file PHENO-FILE                   临床信息文件路径
-  --pheno-file-fmt PHENO-FILE-FMT                       表型信息文件格式, 支持tsv,csv,rds [default: tsv]
-  -g, --grp-col-num GRP-COL-NUM                 表型信息文件中哪一列是样本分组信息 [default: 2]
-  -l, --lfc LFC                 log fold change [default: 1]
-  --pvalue PVALUE                       p value [default: 0.05]
-  -a, --adjust-method ADJUST-METHOD                     校正方法，支持none,BH,BY,holm [default: BH]
-  -o, --outdir OUTDIR                   输出文件夹 [default: .]
+  -x, --opts           RDS file containing argument values
+  -e, --exp-file       表达谱文件路径
+  --exp-file-fmt       表达谱文件格式, 支持tsv,csv,rds [default: tsv]
+  -p, --pheno-file     临床信息文件路径
+  --pheno-file-fmt     表型信息文件格式, 支持tsv,csv,rds [default: tsv]
+  -g, --grp-col-num    表型信息文件中哪一列是样本分组信息 [default: 2]
+  -l, --lfc            log fold change [default: 1]
+  --pvalue             p value [default: 0.05]
+  -a, --adjust-method  校正方法，支持none,BH,BY,holm [default: BH]
+  -o, --outdir         输出文件夹 [default: .]
 ```
 
 1. `--exp-file`
