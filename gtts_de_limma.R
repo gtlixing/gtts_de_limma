@@ -1,4 +1,4 @@
-#!/usr/bin/env Rscript --vanilla
+#!/usr/bin/env Rscript
 # copyright(c) 2020 gaptech
 # author：gttlixing
 # 使用limma对芯片数据进行差异表达分析
