@@ -5,6 +5,12 @@ gtts\_de\_limma（limma差异表达分析工具）
 
 limma是一个常用的差异表达分析工具，主要用于芯片表达谱数据。本程序通过limma对芯片表达谱进行差异表达分析。
 
+    1. 指定表达谱文件路径
+    2. 指定表达谱数据格式，目前支持tsv,csv,rds三个格式，默认
+    3. 指定表型信息文件路径
+    4. 指定表型信息书记局格式，目前支持tsv,csv,rds三个格式
+    5. 指定
+
 ### 开发环境
 
 1.  R版本：3.6.2
@@ -127,9 +133,9 @@ limma是一个常用的差异表达分析工具，主要用于芯片表达谱数
 
 假如，表型信息中的分组有三个分组（case\_1、case\_2、control），那么会产生三个文件：
 
-    1. `case_1-case_2.tsv`：`case_1`和`case_2`之间的差异基因
-    2. `case_1-control.tsv`：`case_1`和`control`之间的差异基因
-    3. `case_2-control.tsv`：`case_2`和`control`之间的差异基因
+    1. case_1-case_2.tsv：case_1和case_2之间的差异基因
+    2. case_1-control.tsv：case_1和control之间的差异基因
+    3. case_2-control.tsv：case_2和control之间的差异基因
 
 以`case_1-case_2.tsv`为例，该文件4列：
 
